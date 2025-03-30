@@ -13,6 +13,16 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// ✅ Connect to DB before every request
+app.use(async (req, res, next) => {
+  try {
+    await userService.connect();
+    next();
+  } catch (err) {
+    res.status(500).json({ error: "Database connection failed." });
+  }
+});
+
 const ExtractJwt = passportJWT.ExtractJwt;
 const JwtStrategy = passportJWT.Strategy;
 
@@ -87,5 +97,4 @@ app.delete("/api/user/history/:id", passport.authenticate('jwt', { session: fals
     .catch(msg => res.status(422).json({ error: msg }));
 });
 
-// Export the app using serverless-http
 module.exports = serverless(app);
